@@ -223,6 +223,8 @@ To cycle through all three graphs, use the left and right arrows located on the 
       .attr("width", width + margin.left + margin.right + padding)
       .attr("height", height + margin.top + margin.bottom + padding + padding)
       .attr("id", "hlbSpread_svg")
+      .attr("viewBox", "0 0 " + width + " " + height)
+      .attr("preserveAspectRatio", "xMidYMid meet")
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
