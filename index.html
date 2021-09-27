@@ -55,7 +55,8 @@ To cycle through all three graphs, use the left and right arrows located on the 
       <input type="number" id="unitPrice" value="14">
     </div>
     <div id="plotHolder" class="col-sm">
-      <div id="hlbSpread"></div>
+      <div id="hlbSpread">
+      </div>
     </div>
   </div>
 </div>
@@ -120,7 +121,8 @@ To cycle through all three graphs, use the left and right arrows located on the 
   }
   function plotHLBSpread() { 
   //Remove any previous graphics
-  d3.select("#hlbSpread").html("")
+  console.log(d3.select("#hlbSpread").node().children.length)
+ 
   // append the svg object to the body of the page
   //let height = d3.select("#plotHolder").node().getBoundingClientRect().height;
   let height = 500;
@@ -132,7 +134,9 @@ To cycle through all three graphs, use the left and right arrows located on the 
   var padding = Math.floor(0.122 * width);
   //let height = container_height - margin.top - margin.bottom - padding;
   //let width = container_width - margin.left - margin.right - padding;
-  var svg = d3.select("#hlbSpread")
+  var svg;
+  if (d3.select("#hlbSpread").node().children.length == 0) {
+    svg = d3.select("#hlbSpread")
     .append("svg")
       .attr("id", "hlbSpread_svg")
       .attr("width", width)
@@ -140,6 +144,18 @@ To cycle through all three graphs, use the left and right arrows located on the 
     .append("g")
       .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
+  } else {
+    svg = d3.select("#hlbSpread_svg")
+      .html("")
+      .attr("id", "hlbSpread_svg")
+      .attr("width", width)
+      .attr("height", height)
+    .append("g")
+      .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+  }
+  
+    
   
   var values = [];
   var startingMonth = d3.select("#monthsToStart").property("value");
@@ -168,8 +184,8 @@ To cycle through all three graphs, use the left and right arrows located on the 
     .attr("class", "x_label")
     .attr("text-anchor", "end")
     .attr("x", width-margin.right-padding-padding)
-    .attr("y", height-margin.top-(0.5*padding))
-    .attr("font-size", "0.9em")
+    .attr("y", height-margin.top - Math.floor(1.2 * padding))
+    .attr("font-size", "0.9rem")
     .text("Days since today");
 
   // Add Y axis
@@ -183,21 +199,22 @@ To cycle through all three graphs, use the left and right arrows located on the 
   svg.append("text")
     .attr("class", "y_label")
     .attr("text-anchor", "end")
-    .attr("y", - Math.floor(0.105 * width))
+    .attr("y", Math.floor(0.4 * padding))
     .attr("dy", ".75em")
     .attr("font-size", "0.9em")
     .attr("transform", "rotate(-90)")
     .text("% of Grove infected with HLB");
 
+  
   svg.append("text")
-        .attr("x", margin.left + padding)             
+        .attr("x", (width - Math.floor(2 *padding)) /2)             
         .attr("y", 0 - (margin.top / 2))
         .attr("class", "title")
         .attr("text-anchor", "middle") 
         .attr("font-style", "italic") 
         .attr("font-weight", "bold")
         .style("font-size", "0.9em") 
-        .text("Spread of HLB in Your Grove Over Next " + numYears + " Years");
+        .text("Spread of HLB Over Next " + numYears + " Years");
   // color palette
   var res = sumstat.map(function(d){ return d.key }) // list of group names
   var color = d3.scaleOrdinal()
@@ -210,6 +227,7 @@ To cycle through all three graphs, use the left and right arrows located on the 
       .enter()
       .append("path")
         .attr("fill", "none")
+        .attr("transform","translate(" + Math.floor(0.02 * width) + ", 0)")
         .attr("stroke", function(d){ return color(d.key) })
         .attr("stroke-width", 1.5)
         .attr("d", function(d){
@@ -219,21 +237,21 @@ To cycle through all three graphs, use the left and right arrows located on the 
             (d.values)
         })
   svg.append("text")
-		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left)) + "," + y(noaction(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(noaction(projectionLength, alpha, startingMonth)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "red")
 		.text("No Action");
 
 	svg.append("text")
-		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left) + "," + y(individualspray(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(individualspray(projectionLength, alpha, startingMonth)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "steelblue")
 		.text("Ind. Spray");
   
   svg.append("text")
-		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left) + "," + y(groupspray(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(groupspray(projectionLength, alpha, startingMonth)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "#4daf4a")
