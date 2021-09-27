@@ -119,14 +119,18 @@ To cycle through all three graphs, use the left and right arrows located on the 
   function infectedYield(severity) {
     return Math.exp(-1.85 * severity);
   }
-  function plotHLBSpread() { 
+  function plotHLBSpread(resize=false) { 
   //Remove any previous graphics
-  console.log(d3.select("#hlbSpread").node().children.length)
+  let reDraw = d3.select("#hlbSpread").node().children.length > 0;
  
   // append the svg object to the body of the page
   //let height = d3.select("#plotHolder").node().getBoundingClientRect().height;
   let height = 500;
-  let width = d3.select("#plotHolder").node().getBoundingClientRect().width;
+  
+  var width = d3.select("#plotHolder").node().getBoundingClientRect().width;
+  if (reDraw && !resize) {
+    width = parseInt(d3.select("#hlbSpread_svg").attr("width"));
+  }
   console.log(height)
   console.log(width)
   var margin = {top: Math.floor(0.095 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
@@ -495,14 +499,14 @@ To cycle through all three graphs, use the left and right arrows located on the 
     .text("Coordinated Spraying");
   }
 
-  function refreshOutput() {
-    plotHLBSpread();
+  function refreshOutput(resize=false) {
+    plotHLBSpread(resize);
     //plotYield();
     //returnsPlot();
   }
   refreshOutput();
   d3.select("#inputs").selectAll("input").on("input change", refreshOutput);
-  d3.select(window).on('resize', refreshOutput);
+  d3.select(window).on('resize', function() { refreshOutput(true);} );
   //Slideshow stuff
   /*
   var slideIndex = 1;
