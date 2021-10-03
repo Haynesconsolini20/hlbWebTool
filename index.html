@@ -220,12 +220,13 @@ To use the tool, customize the options on the left and observe the output graphs
     .text("Days since today");
 
   // Add Y axis
+  var formatPercent = d3.format(".0%")
   var y = d3.scaleLinear()
     .domain([0, d3.max(values, function(d) { return +d.y; })])
     .range([ height - margin.top - padding, 0 ]);
   svg.append("g")
     .attr("transform", "translate(" + Math.floor(0.02 * width) + ", 0)")
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y).tickFormat(formatPercent));
   // Add Y-axis label
   svg.append("text")
     .attr("class", "y_label")
@@ -363,12 +364,13 @@ To use the tool, customize the options on the left and observe the output graphs
     .text("Days since today");
 
   // Add Y axis
+  var formatPercent = d3.format(".0%")
   var y = d3.scaleLinear()
     .domain([0, d3.max(values, function(d) { return +d.y; })])
     .range([ height - margin.top - padding, 0 ]);
   svg.append("g")
     .attr("transform", "translate(" + Math.floor(0.02 * width) + ", 0)")
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y).tickFormat(formatPercent));
   // Add Y-axis label
   svg.append("text")
     .attr("class", "y_label")
