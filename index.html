@@ -78,42 +78,71 @@ to use landscape orientation for a better experience.
       //width = 700 - margin.left - margin.right,
       //height = 600 - margin.top - margin.bottom;
 
-
+  function logCurve(B_0, g, K, t) {
+    var numerator = K 
+    var denom = 1+B_0*Math.exp(-1*g*t)
+    return numerator / denom
+  }
   //D3 and Plotting
   function noaction(x,alpha,startingMonth) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
+    // Log coefficients
+    let B_0 = 43.9
+    let g = 0.00465
+    let K = 0.88395
+    let B_0_alpha = 55.7
+    let g_alpha = 0.00502
+    let K_alpha = 0.88398
+
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    var allSpray = 2 * scaledX;
-    var noneSpray = 3 * scaledX;
-    var difference = allSpray - noneSpray;
-    return noneSpray + (scaledAlpha * difference);
+    let res = logCurve(B_0,g,K,scaledX)
+    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
+    
+    return res + scaledAlpha*(alpha_res - res);
   }
 
   function individualspray(x,alpha,startingMonth) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
+    // Log coefficients
+    let B_0 = 114
+    let g = 0.00495
+    let K = 0.86311
+    let B_0_alpha = 192
+    let g_alpha = 0.00565
+    let K_alpha = 0.85544
+
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    var allSpray = scaledX;
-    var noneSpray = 2 * scaledX;
-    var difference = allSpray - noneSpray;
-    return noneSpray + (scaledAlpha * difference);
+    let res = logCurve(B_0,g,K,scaledX)
+    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
+    
+    return res + scaledAlpha*(alpha_res - res);
   }
 
   function groupspray(x,alpha,startingMonth) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
+    // Log coefficients
+    let B_0 = 115
+    let g = 0.00493
+    let K = 0.83849
+    let B_0_alpha = 177
+    let g_alpha = 0.00557
+    let K_alpha = 0.83151
+
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    var allSpray = 0.5 * scaledX;
-    var noneSpray = scaledX;
-    var difference = allSpray - noneSpray;
-    return noneSpray + (scaledAlpha * difference);  }
+    let res = logCurve(B_0,g,K,scaledX)
+    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
+    
+    return res + scaledAlpha*(alpha_res - res);
+  }
 
   function infectedYield(severity) {
     return Math.exp(-1.85 * severity);
@@ -802,6 +831,12 @@ to use landscape orientation for a better experience.
   refreshOutput();
   d3.select("#inputs").selectAll("input").on("input change", refreshOutput);
   d3.select(window).on('resize', function() { refreshOutput(true);} );
+  for (var i = 0; i <= 1500; i += 500) {
+    na_res_0 = noaction(i, 0, 0)
+    na_res_1 = noaction(i, 1, 0)
+    console.log(`(${i}, 0): ${na_res_0}`)
+    console.log(`(${i}, 1): ${na_res_1}`)
+  }
   //Slideshow stuff
   /*
   var slideIndex = 1;
