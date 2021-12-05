@@ -35,7 +35,16 @@ To use the tool, customize the options on the left and observe the output graphs
       <br>
       <input type="range" min="0" max="100" value="50" class="slider" id="alpha">
       <br><br>
-      <label>Cost of Spray per acre</label>
+      <label>Efficacy of insecticide</label>
+      <br>
+      <input type="radio" id="e65" name="efficacy" value="65" checked>
+      <label>65%</label>
+      <input type="radio" id="e75" name="efficacy" value="75">
+      <label>75%</label>
+      <input type="radio" id="e85" name="efficacy" value="85">
+      <label>85%</label>
+      <br><br>
+      <label>Cost of insecticide per acre</label>
       <br>
       <input type="number" id="sprayCost" value=15>
       <br><br>
@@ -76,6 +85,55 @@ To use the tool, customize the options on the left and observe the output graphs
 <script>
       //width = 700 - margin.left - margin.right,
       //height = 600 - margin.top - margin.bottom;
+  function betaCurve(relT, efficacy, strategy, alpha) {
+   // Coefficients
+    var intercept = -2.633170938;
+    var e75_coef = 0.014387566;
+    var e85_coef = 0.010574014;
+    var alpha1_coef = -0.042344388;
+    var indv_coef = -0.470094745;
+    var group_coef = -0.483225227;
+    var relT_coef = 0.003047944;
+    var e75alpha1_coef = -0.065168581;
+    var e85alpha1_coef = -0.043001604;
+    var e75indv_coef = -0.244191830;
+    var e85indv_coef = -0.839384482;
+    var e75group_coef = -0.261820854;
+    var e85group_coef = -0.988765418;
+    var alpha1indv_coef = 0.000825834;
+    var alpha1group_coef = 0.025466268;
+    var e75alpha1indv_coef = -0.068987357;
+    var e85alpha1indv_coef = -0.970692541;
+    var e75alpha1group_coef = -0.075482935;
+    var e85alpha1group_coef = -1.069352160;
+    
+    //covariates
+    var e75 = (efficacy == 0.75);
+    var e85 = (efficacy == 0.85);
+    var indv = (strategy == "Individual Action");
+    var group = (strategy == "Group Action");
+
+    //sum em up
+    var sum_alpha1 = 0;
+    var sum_alpha0 = 0;
+    //sum the alpha0 case
+    sum_alpha0 += intercept + (e75_coef * e75) + (e85_coef * e85) + 
+                  (indv_coef * indv) + (group_coef * group) +
+                  (relT_coef * relT) + (e75indv_coef * (e75 * indv)) +
+                  (e85indv_coef * (e85 * indv)) + (e75group_coef * (e75 * group)) +
+                  (e85group_coef * (e85 * group));
+    // add the additional alpha terms
+    sum_alpha1 = sum_alpha0 + alpha1_coef + (e75alpha1_coef * e75) +
+                 (e85alpha1_coef * e85) + (alpha1indv_coef * indv) +
+                 (alpha1group_coef * group) + (e75alpha1indv_coef * (e75 * indv)) +
+                 (e85alpha1indv_coef * (e85 * indv)) + (e75alpha1group_coef * (e75 * group)) +
+                 (e85alpha1group_coef * (e85 * group));
+    //Take the weighted sum based on alpha
+    var sum = sum_alpha0 + alpha*(sum_alpha1 - sum_alpha0);
+    //Apply the logistic transformation 
+    var transformed = 1 / (1 + Math.exp(-1*sum));
+    return transformed;
+  }
 
   function logCurve(B_0, g, K, t) {
     var numerator = K 
@@ -83,64 +141,33 @@ To use the tool, customize the options on the left and observe the output graphs
     return numerator / denom
   }
   //D3 and Plotting
-  function noaction(x,alpha,startingMonth) {
+  function noaction(x,alpha,startingMonth, efficacy) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
-    // Log coefficients
-    let B_0 = 43.9
-    let g = 0.00465
-    let K = 0.88395
-    let B_0_alpha = 55.7
-    let g_alpha = 0.00502
-    let K_alpha = 0.88398
-
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    let res = logCurve(B_0,g,K,scaledX)
-    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
-    
-    return res + scaledAlpha*(alpha_res - res);
+    let beta = betaCurve(scaledX, efficacy, "No Action", scaledAlpha);
+    return beta;
   }
 
-  function individualspray(x,alpha,startingMonth) {
+  function individualspray(x,alpha,startingMonth, efficacy) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
-    // Log coefficients
-    let B_0 = 114
-    let g = 0.00495
-    let K = 0.86311
-    let B_0_alpha = 192
-    let g_alpha = 0.00565
-    let K_alpha = 0.85544
-
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    let res = logCurve(B_0,g,K,scaledX)
-    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
-    
-    return res + scaledAlpha*(alpha_res - res);
+    return betaCurve(scaledX, efficacy, "Individual Action", scaledAlpha)
   }
 
-  function groupspray(x,alpha,startingMonth) {
+  function groupspray(x,alpha,startingMonth, efficacy) {
     if (x < (startingMonth * 30)) {
       return 0;
     }
-    // Log coefficients
-    let B_0 = 115
-    let g = 0.00493
-    let K = 0.83849
-    let B_0_alpha = 177
-    let g_alpha = 0.00557
-    let K_alpha = 0.83151
-
     var scaledX = x - (startingMonth * 30);
     var scaledAlpha = alpha / 100;
-    let res = logCurve(B_0,g,K,scaledX)
-    let alpha_res = logCurve(B_0_alpha,g_alpha,K_alpha,scaledX)
-    
-    return res + scaledAlpha*(alpha_res - res);
+    return betaCurve(scaledX, efficacy, "Group Action", scaledAlpha);
+
   }
 
   function infectedYield(severity) {
@@ -193,10 +220,12 @@ To use the tool, customize the options on the left and observe the output graphs
   var numYears = d3.select("#projectionLength").property("value");
   var projectionLength = numYears * 365;
   var alpha = d3.select("#alpha").property("value");
+  var efficacy = d3.select('input[name="efficacy"]:checked').node().value
+  efficacy = Number(efficacy) / 100;
   for (let x=1; x <= projectionLength; x++) {
-    values.push({"x": x, "y": noaction(x,alpha, startingMonth),"strategy": "No Action" });
-    values.push({"x": x, "y": individualspray(x,alpha,startingMonth), "strategy": "Individual Spray" });
-    values.push({"x": x, "y": groupspray(x,alpha,startingMonth), "strategy": "Coordinated Spray" });
+    values.push({"x": x, "y": noaction(x,alpha, startingMonth, efficacy),"strategy": "No Action" });
+    values.push({"x": x, "y": individualspray(x,alpha,startingMonth, efficacy), "strategy": "Individual Spray" });
+    values.push({"x": x, "y": groupspray(x,alpha,startingMonth, efficacy), "strategy": "Coordinated Spray" });
   }
 
   //Group data
@@ -269,21 +298,21 @@ To use the tool, customize the options on the left and observe the output graphs
             (d.values)
         })
   svg.append("text")
-		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(noaction(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(noaction(projectionLength, alpha, startingMonth, efficacy)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "red")
 		.text("No Action");
 
 	svg.append("text")
-		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(individualspray(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(individualspray(projectionLength, alpha, startingMonth, efficacy)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "steelblue")
 		.text("Ind. Spray");
   
   svg.append("text")
-		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(groupspray(projectionLength, alpha, startingMonth)) + ")")
+		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(groupspray(projectionLength, alpha, startingMonth, efficacy)) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "#4daf4a")
@@ -337,10 +366,12 @@ To use the tool, customize the options on the left and observe the output graphs
   var numYears = d3.select("#projectionLength").property("value");
   var projectionLength = numYears * 365;
   var alpha = d3.select("#alpha").property("value");
+  var efficacy = d3.select('input[name="efficacy"]:checked').node().value
+  efficacy = Number(efficacy) / 100;
   for (let x=1; x <= projectionLength; x++) {
-    values.push({"x": x, "y": infectedYield(noaction(x,alpha, startingMonth)),"strategy": "No Action" });
-    values.push({"x": x, "y": infectedYield(individualspray(x,alpha,startingMonth)), "strategy": "Individual Spray" });
-    values.push({"x": x, "y": infectedYield(groupspray(x,alpha,startingMonth)), "strategy": "Coordinated Spray" });
+    values.push({"x": x, "y": infectedYield(noaction(x,alpha, startingMonth, efficacy)),"strategy": "No Action" });
+    values.push({"x": x, "y": infectedYield(individualspray(x,alpha,startingMonth, efficacy)), "strategy": "Individual Spray" });
+    values.push({"x": x, "y": infectedYield(groupspray(x,alpha,startingMonth, efficacy)), "strategy": "Coordinated Spray" });
   }
 
   //Group data
@@ -413,21 +444,21 @@ To use the tool, customize the options on the left and observe the output graphs
             (d.values)
         })
   svg.append("text")
-		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(infectedYield(noaction(projectionLength, alpha, startingMonth))) + ")")
+		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(infectedYield(noaction(projectionLength, alpha, startingMonth,efficacy))) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "red")
 		.text("No Action");
 
 	svg.append("text")
-		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(individualspray(projectionLength, alpha, startingMonth))) + ")")
+		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(individualspray(projectionLength, alpha, startingMonth,efficacy))) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "steelblue")
 		.text("Ind. Spray");
   
   svg.append("text")
-		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(groupspray(projectionLength, alpha, startingMonth))) + ")")
+		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(groupspray(projectionLength, alpha, startingMonth,efficacy))) + ")")
 		.attr("dy", ".35em")
 		.attr("text-anchor", "start")
 		.style("fill", "#4daf4a")
@@ -593,6 +624,8 @@ To use the tool, customize the options on the left and observe the output graphs
     var startingMonth = d3.select("#monthsToStart").property("value");
     var numYears = d3.select("#projectionLength").property("value");
     let alpha = d3.select("#alpha").property("value");
+    var efficacy = d3.select('input[name="efficacy"]:checked').node().value
+    efficacy = Number(efficacy) / 100;
     let sprayCost = d3.select("#sprayCost").property("value");
     let numAcres = d3.select("#numAcres").property("value");
     let annualYield = d3.select("#annualYield").property("value");
@@ -601,10 +634,10 @@ To use the tool, customize the options on the left and observe the output graphs
     var individualProfit = 0;
     var groupProfit = 0;
     for (let x=1; x <= numYears; x++) {
-      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth)) * unitPrice;
-      individualProfit += annualYield * infectedYield(individualspray(x*365,alpha,startingMonth)) * unitPrice
+      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth,efficacy)) * unitPrice;
+      individualProfit += annualYield * infectedYield(individualspray(x*365,alpha,startingMonth,efficacy)) * unitPrice
                               - sprayCost * numAcres;
-      groupProfit += annualYield * infectedYield(groupspray(x*365,alpha,startingMonth)) * unitPrice
+      groupProfit += annualYield * infectedYield(groupspray(x*365,alpha,startingMonth,efficacy)) * unitPrice
                               - sprayCost * numAcres;
       values.push({"x": x, "y": noActionProfit,"strategy": "No Action" });
       values.push({"x": x, "y": individualProfit, "strategy": "Individual Spray" });
