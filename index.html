@@ -11,56 +11,73 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 <style>
-  
+html {
+  margin: 5% 5% 5% 5%;
+}
 </style>
 
 <!-- Create a div where the graph will take place -->
 <h1>HLB Grower Web Tool</h1>
+
+<h2>Introduction</h2>
+<p>Welcome to the HLB Grower Web Tool. This page is designed to help growers choose an Huanglongbing (HLB) response strategy. To use the tool, first enter information about your grove to the best of your ability. The default values provided are a good estimate for any information you don't know. Then select the percentage of neighbors who will particpate in coordinated spraying and the pesticide efficacy rate. Once the information is entered you will observe the output graphs change revealing a preferred Asian Citrus Psyllid (ACP) mitigation strategy. The information here is based on the current reccomendations prescribed by the California Psyllid Management Areas (PMA). See the helpful links section for more information.</p> 
+<h2>How to use this tool</h2>
+<p>Each graph has three colored lines: red for taking no action, blue for spraying in a 60-day window of your PMA prescribed dates, and green for spraying in a 21-day window of those dates. If you want a quick answer to the most profitable strategy, the third graph shows total 5-year profit. The color that ends the highest is the best strategy. The first and second graphs provide more information for the curious. The first graph shows what percentage of your grove would be infected by HLB over time, and the second graph shows the percent of regular yield that would be able to harvest at that time. A yield of 100% is a standard uninfected yield, so a yield of 60% would be a yield that is 40% lower than normal. Lower is better for HLB spread, and higher is better for yield.</p>
+<h2>More Information</h2>
+<p>Default values are based on the information provided in the 2021 UC Extension costs and returns study for navel oranges.</p>
+<p>Funding for this tool was provided by CDFA and USDA-NFA ECDRE Extension Grants, and computing resources were provided by the IBM Power Systems Academic Initiative. For more information about the research that powers this tool, check out the research notes and publication in the links section or contact us at <a href="mailto:kaplanj@csus.edu">kaplanj@csus.edu</a>.</p>
+<h3>Helpful Links</h3>
 <p>
-This is a prototype of the HLB grower web tool. 
-To use the tool, customize the options on the left and observe the output graphs.
+<a href="https://ucanr.edu/sites/ACP/Grower_Options/Grower_Management/Eradication_Strategies/">ACP Eradication Strategies</a><br/>
+<a href="https://citrusinsider.org/psyllid-and-disease-control/treatments/treatment-schedules-by-region/">Treatment Schedules by Region</a><br/>
+<a href="https://coststudyfiles.ucdavis.edu/uploads/pub/2021/08/12/2021orangessjvsouth.pdf">UC Extension Cost and Returns Study</a><br/>
+<a href="https://www.csus.edu/faculty/k/kaplanj/researchnotes/research_note-2021_1_survey.pdf">Research Note 1 (Survey Results)</a><br/>
+<a href="https://www.csus.edu/faculty/k/kaplanj/researchnotes/researchnote2021-2.pdf">Research Note 2 (Survival Analysis)</a><br/>
+Peer-Reviewed Publication (Forthcoming)
 </p>
 <div class="container">
   <div class="row">
-    <div id="inputs" class="col-sm" >
+    <div id="inputs" class="col-sm">
+      <h1>Inputs</h1>
       <label>Length of Simulation in Years</label>
       <br>
       <input type="number" id="projectionLength" min=1 max=40 value=5 />
       <br><br>
       <label>How many months until HLB arrives in your grove</label>
       <br>
-      <input type="number" id="monthsToStart" min=0 max=480>
+      <input type="number" id="monthsToStart" min=0 max=480 value=0>
       <br><br>
       <label>% of Neighbors engaging in coordinated spraying</label>
       <br>
       <input type="range" min="0" max="100" value="50" class="slider" id="alpha">
       <br><br>
-      <label>Efficacy of insecticide</label>
+      <label>Efficacy of insecticide used</label>
       <br>
-      <input type="radio" id="e65" name="efficacy" value="65" checked>
+      <input type="radio" id="e65" name="efficacy" value="65">
       <label>65%</label>
       <input type="radio" id="e75" name="efficacy" value="75">
       <label>75%</label>
-      <input type="radio" id="e85" name="efficacy" value="85">
+      <input type="radio" id="e85" name="efficacy" value="85" checked>
       <label>85%</label>
       <br><br>
-      <label>Cost of insecticide per acre</label>
+      <label>Cost of one insecticide application to one acre</label>
       <br>
-      <input type="number" id="sprayCost" value=15>
+      <input type="number" id="sprayCost" value="53.71">
       <br><br>
-      <label>Number of Acres</label>
+      <label>Number of acres</label>
       <br>
       <input type="number" id="numAcres" value=55>
       <br><br>
-      <label>Average Annual Yield (in cartons)</label>
+      <label>Average annual yield per acre (in cartons)</label>
       <br>
-      <input type="number" id="annualYield" value="1000">
+      <input type="number" id="annualYield" value="564">
       <br><br>
-      <label>Average Return per Carton (price of carton)</label>
+      <label>Average return per carton (price of carton)</label>
       <br>
-      <input type="number" id="unitPrice" value="14">
+      <input type="number" id="unitPrice" value="17.60">
     </div>
     <div id="plotHolder" class="col-sm">
+      <h1>Output</h1>
       <div id="hlbSpread"></div>
       <div id="yield"></div>
       <div id="profit"></div>
@@ -86,26 +103,28 @@ To use the tool, customize the options on the left and observe the output graphs
       //width = 700 - margin.left - margin.right,
       //height = 600 - margin.top - margin.bottom;
   function betaCurve(relT, efficacy, strategy, alpha) {
-   // Coefficients
-    var intercept = -2.633170938;
-    var e75_coef = 0.014387566;
-    var e85_coef = 0.010574014;
-    var alpha1_coef = -0.042344388;
-    var indv_coef = -0.470094745;
-    var group_coef = -0.483225227;
-    var relT_coef = 0.003047944;
-    var e75alpha1_coef = -0.065168581;
-    var e85alpha1_coef = -0.043001604;
-    var e75indv_coef = -0.244191830;
-    var e85indv_coef = -0.839384482;
-    var e75group_coef = -0.261820854;
-    var e85group_coef = -0.988765418;
-    var alpha1indv_coef = 0.000825834;
-    var alpha1group_coef = 0.025466268;
-    var e75alpha1indv_coef = -0.068987357;
-    var e85alpha1indv_coef = -0.970692541;
-    var e75alpha1group_coef = -0.075482935;
-    var e85alpha1group_coef = -1.069352160;
+    // Coefficients
+    var intercept = -2.44978330;
+    var e75_coef = -0.20743718;
+    var e85_coef = -0.07299259;
+    var alpha1_coef = 0.01494436;
+    var indv_coef = -0.15463509;
+    var group_coef = -0.10212705;
+    var maxT_coef = 0.00228886;
+    var e75alpha1_coef = -0.06266322;
+    var e85alpha1_coef = -0.79121443;
+    var e75indv_coef = -0.16353347;
+    var e85indv_coef = -0.64362937;
+    var e75group_coef = -0.13874484;
+    var e85group_coef = -0.85018937;
+    var e75maxT_coef = 0.00018147;
+    var e85maxT_coef = 0.00020873;
+    var indvmaxT_coef = -0.00009667;
+    var groupmaxT_coef = -0.00013745;
+    var e75indvmaxT_coef = -0.00003253;
+    var e85indvmaxT_coef = -0.00017724;
+    var e75groupmaxT_coef = -0.00005853;
+    var e85groupmaxT_coef = -0.00014676;
     
     //covariates
     var e75 = (efficacy == 0.75);
@@ -117,17 +136,29 @@ To use the tool, customize the options on the left and observe the output graphs
     var sum_alpha1 = 0;
     var sum_alpha0 = 0;
     //sum the alpha0 case
-    sum_alpha0 += intercept + (e75_coef * e75) + (e85_coef * e85) + 
-                  (indv_coef * indv) + (group_coef * group) +
-                  (relT_coef * relT) + (e75indv_coef * (e75 * indv)) +
-                  (e85indv_coef * (e85 * indv)) + (e75group_coef * (e75 * group)) +
-                  (e85group_coef * (e85 * group));
+    sum_alpha0 += intercept + 
+                  (e75_coef * e75) + 
+                  (e85_coef * e85) + 
+                  (indv_coef * indv) + 
+                  (group_coef * group) +
+                  (maxT_coef * relT) + 
+                  (e75indv_coef * (e75 * indv)) +
+                  (e85indv_coef * (e85 * indv)) + 
+                  (e75group_coef * (e75 * group)) +
+                  (e85group_coef * (e85 * group)) +
+                  (e75maxT_coef * (e75 * relT)) +
+                  (e85maxT_coef * (e85 * relT)) +
+                  (indvmaxT_coef * (indv * relT)) +
+                  (groupmaxT_coef * (group * relT)) +
+                  (e75indvmaxT_coef * (e75 * indv * relT)) +
+                  (e85indvmaxT_coef * (e85 * indv * relT)) +
+                  (e75groupmaxT_coef * (e75 * group * relT)) +
+                  (e85groupmaxT_coef * (e85 * group * relT));
     // add the additional alpha terms
-    sum_alpha1 = sum_alpha0 + alpha1_coef + (e75alpha1_coef * e75) +
-                 (e85alpha1_coef * e85) + (alpha1indv_coef * indv) +
-                 (alpha1group_coef * group) + (e75alpha1indv_coef * (e75 * indv)) +
-                 (e85alpha1indv_coef * (e85 * indv)) + (e75alpha1group_coef * (e75 * group)) +
-                 (e85alpha1group_coef * (e85 * group));
+    sum_alpha1 = sum_alpha0 + 
+                 alpha1_coef + 
+                 (e75alpha1_coef * e75) +
+                 (e85alpha1_coef * e85);
     //Take the weighted sum based on alpha
     var sum = sum_alpha0 + alpha*(sum_alpha1 - sum_alpha0);
     //Apply the logistic transformation 
@@ -187,7 +218,7 @@ To use the tool, customize the options on the left and observe the output graphs
   }
   console.log(height)
   console.log(width)
-  var margin = {top: Math.floor(0.095 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
+  var margin = {top: Math.floor(0.19 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
   console.log(margin)
   var padding = Math.floor(0.122 * width);
   //let height = container_height - margin.top - margin.bottom - padding;
@@ -297,26 +328,52 @@ To use the tool, customize the options on the left and observe the output graphs
             .y(function(d) { return y(+d.y); })
             (d.values)
         })
-  svg.append("text")
-		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(noaction(projectionLength, alpha, startingMonth, efficacy)) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "red")
-		.text("No Action");
 
-	svg.append("text")
-		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(individualspray(projectionLength, alpha, startingMonth, efficacy)) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "steelblue")
-		.text("Ind. Spray");
-  
+
+  // ****************** LEGEND *********************
+  legend_y = 0 - (margin.top / 4)
+  noaction_x = (width - Math.floor(8 *padding)) /2
+  //No Action
+  svg.append("circle")
+    .attr("cx",noaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "red");
   svg.append("text")
-		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(groupspray(projectionLength, alpha, startingMonth, efficacy)) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "#4daf4a")
-		.text("Coord. Spray");
+    .attr("x", noaction_x+10)
+    .attr("y", legend_y+5)
+    .text("None")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "red");
+  //Indv Action
+  indvaction_x = noaction_x+80
+  svg.append("circle")
+    .attr("cx",indvaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "steelblue");
+  svg.append("text")
+    .attr("x", indvaction_x+10)
+    .attr("y", legend_y+5)
+    .text("60-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "steelblue");
+  //Group Action
+  groupaction_x = indvaction_x+80
+  svg.append("circle")
+    .attr("cx",groupaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "#4daf4a");
+  svg.append("text")
+    .attr("x", groupaction_x+10)
+    .attr("y", legend_y+5)
+    .text("21-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "#4daf4a");
 
   }
   function plotYield_v2(resize=false) { 
@@ -333,7 +390,7 @@ To use the tool, customize the options on the left and observe the output graphs
   }
   console.log(height)
   console.log(width)
-  var margin = {top: Math.floor(0.095 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
+  var margin = {top: Math.floor(0.19 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
   console.log(margin)
   var padding = Math.floor(0.122 * width);
   //let height = container_height - margin.top - margin.bottom - padding;
@@ -443,26 +500,51 @@ To use the tool, customize the options on the left and observe the output graphs
             .y(function(d) { return y(+d.y); })
             (d.values)
         })
+   // ****************** LEGEND *********************
+   legend_y = 0 - (margin.top / 4)
+  noaction_x = (width - Math.floor(8 *padding)) /2
+  //No Action
+  svg.append("circle")
+    .attr("cx",noaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "red");
   svg.append("text")
-		.attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(infectedYield(noaction(projectionLength, alpha, startingMonth,efficacy))) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "red")
-		.text("No Action");
+    .attr("x", noaction_x+10)
+    .attr("y", legend_y+5)
+    .text("None")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "red");
+  //Indv Action
+  indvaction_x = noaction_x+80
+  svg.append("circle")
+    .attr("cx",indvaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "steelblue");
+  svg.append("text")
+    .attr("x", indvaction_x+10)
+    .attr("y", legend_y+5)
+    .text("60-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "steelblue");
+  //Group Action
+  groupaction_x = indvaction_x+80
+  svg.append("circle")
+    .attr("cx",groupaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "#4daf4a");
+  svg.append("text")
+    .attr("x", groupaction_x+10)
+    .attr("y", legend_y+5)
+    .text("21-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "#4daf4a");
 
-	svg.append("text")
-		.attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(individualspray(projectionLength, alpha, startingMonth,efficacy))) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "steelblue")
-		.text("Ind. Spray");
-  
-  svg.append("text")
-		.attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(infectedYield(groupspray(projectionLength, alpha, startingMonth,efficacy))) + ")")
-		.attr("dy", ".35em")
-		.attr("text-anchor", "start")
-		.style("fill", "#4daf4a")
-		.text("Coord. Spray");
 
   }
   
@@ -592,7 +674,7 @@ To use the tool, customize the options on the left and observe the output graphs
     }
     console.log(height)
     console.log(width)
-    var margin = {top: Math.floor(0.095 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
+    var margin = {top: Math.floor(0.19 * height), right: Math.floor(0.052*width), bottom: Math.floor(0.07*height), left: Math.floor(0.105*width)};
     console.log(margin)
     var padding = Math.floor(0.122 * width);
     //let height = container_height - margin.top - margin.bottom - padding;
@@ -634,11 +716,11 @@ To use the tool, customize the options on the left and observe the output graphs
     var individualProfit = 0;
     var groupProfit = 0;
     for (let x=1; x <= numYears; x++) {
-      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth,efficacy)) * unitPrice;
-      individualProfit += annualYield * infectedYield(individualspray(x*365,alpha,startingMonth,efficacy)) * unitPrice
-                              - sprayCost * numAcres;
-      groupProfit += annualYield * infectedYield(groupspray(x*365,alpha,startingMonth,efficacy)) * unitPrice
-                              - sprayCost * numAcres;
+      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres;
+      individualProfit += annualYield * infectedYield(individualspray(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres
+                              - (sprayCost * numAcres * 6);
+      groupProfit += annualYield * infectedYield(groupspray(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres
+                              - (sprayCost * numAcres * 6);
       values.push({"x": x, "y": noActionProfit,"strategy": "No Action" });
       values.push({"x": x, "y": individualProfit, "strategy": "Individual Spray" });
       values.push({"x": x, "y": groupProfit, "strategy": "Coordinated Spray" });
@@ -712,26 +794,51 @@ To use the tool, customize the options on the left and observe the output graphs
               .y(function(d) { return y(+d.y); })
               (d.values)
           })
-    svg.append("text")
-      .attr("transform", "translate(" + ( (width - padding - padding - margin.right - margin.left + Math.floor(0.02 * width))) + "," + y(noActionProfit) + ")")
-      .attr("dy", ".35em")
-      .attr("text-anchor", "start")
-      .style("fill", "red")
-      .text("No Action");
+    // ****************** LEGEND *********************
+  legend_y = 0 - (margin.top / 4)
+  noaction_x = (width - Math.floor(8 *padding)) /2
+  //No Action
+  svg.append("circle")
+    .attr("cx",noaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "red");
+  svg.append("text")
+    .attr("x", noaction_x+10)
+    .attr("y", legend_y+5)
+    .text("None")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "red");
+  //Indv Action
+  indvaction_x = noaction_x+80
+  svg.append("circle")
+    .attr("cx",indvaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "steelblue");
+  svg.append("text")
+    .attr("x", indvaction_x+10)
+    .attr("y", legend_y+5)
+    .text("60-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "steelblue");
+  //Group Action
+  groupaction_x = indvaction_x+80
+  svg.append("circle")
+    .attr("cx",groupaction_x)
+    .attr("cy",legend_y)
+    .attr("r", 6)
+    .style("fill", "#4daf4a");
+  svg.append("text")
+    .attr("x", groupaction_x+10)
+    .attr("y", legend_y+5)
+    .text("21-day")
+    .style("font-size", "15px")
+    .attr("alignment-baseline","middle")
+    .attr("fill", "#4daf4a");
 
-    svg.append("text")
-      .attr("transform", "translate(" + (width-padding - padding - margin.right - margin.left + Math.floor(0.02 * width)) + "," + y(individualProfit) + ")")
-      .attr("dy", ".35em")
-      .attr("text-anchor", "start")
-      .style("fill", "steelblue")
-      .text("Ind. Spray");
-    
-    svg.append("text")
-      .attr("transform", "translate(" + (width-padding- padding - margin.right-margin.left + Math.floor(0.02 * width)) + "," + y(groupProfit) + ")")
-      .attr("dy", ".35em")
-      .attr("text-anchor", "start")
-      .style("fill", "#4daf4a")
-      .text("Coord. Spray");
 
   }
   function returnsPlot() {
