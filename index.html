@@ -19,13 +19,12 @@ html {
 <!-- Create a div where the graph will take place -->
 <h1>HLB Grower Web Tool</h1>
 
-<h2>Introduction</h2>
-<p>Welcome to the HLB Grower Web Tool. This page is designed to help growers choose an Huanglongbing (HLB) response strategy. To use the tool, first enter information about your grove to the best of your ability. The default values provided are a good estimate for any information you don't know. Then select the percentage of neighbors who will particpate in coordinated spraying and the pesticide efficacy rate. Once the information is entered you will observe the output graphs change revealing a preferred Asian Citrus Psyllid (ACP) mitigation strategy. The information here is based on the current reccomendations prescribed by the California Psyllid Management Areas (PMA). See the helpful links section for more information.</p> 
+<h2>Background</h2>
+Since the late 18th century, Huanglongbing (HLB) has devastated citrus production across 40 countries spanning Asia, Africa, and the Americas. It arrived in North America in 1998 when the Asian Citrus Psyllid (ACP), the insect that carries the disease, was first discovered in Florida. Within seven years, HLB was detected there as well, followed by a rapid spread of the disease, resulting in a $4.5 billion loss to the Florida economy by 2011 and decreased production by 8 million tons per year by 2020. In August 2020 CDFA announced discovery of the first infected psyllid in a commercial citrus grove in southern California, renewing concern about how best to handle the threat of HLB in California. This interactive site has been designed to assist in that discussion by providing growers with information on the potential economic consequences of different ACP spraying strategies.
 <h2>How to use this tool</h2>
-<p>Each graph has three colored lines: red for taking no action, blue for spraying in a 60-day window of your PMA prescribed dates, and green for spraying in a 21-day window of those dates. If you want a quick answer to the most profitable strategy, the third graph shows total 5-year profit. The color that ends the highest is the best strategy. The first and second graphs provide more information for the curious. The first graph shows what percentage of your grove would be infected by HLB over time, and the second graph shows the percent of regular yield that would be able to harvest at that time. A yield of 100% is a standard uninfected yield, so a yield of 60% would be a yield that is 40% lower than normal. Lower is better for HLB spread, and higher is better for yield.</p>
+<p>Enter details for your grove below. The default values shown in the enter boxes are based on a recent <a href="https://coststudyfiles.ucdavis.edu/uploads/pub/2021/08/12/2021orangessjvsouth.pdf">University of California Cost and Returns Study</a>. Change them to fit your operation. Then select the percentage of neighbors who will particpate in coordinated spraying and the pesticide efficacy rate. Once the information is entered you will observe the output graphs change revealing a preferred psyllid mitigation strategy. The information here is based on the current reccomendations prescribed by the California Psyllid Management Areas (PMA). See the helpful links section for more information. Each graph has three colored lines: red for taking no action, blue for spraying in a 60-day window of your PMA prescribed dates, and green for spraying in a 21-day window of those dates. If you want a quick answer to the most profitable strategy, the first graph shows cumulative profit over the desired time period. The other two graphs show the percentage of the grove infected with HLB following initial infection and the effect of the spread on relative yields, respectively.</p>
 <h2>More Information</h2>
-<p>Default values are based on the information provided in the 2021 UC Extension costs and returns study for navel oranges.</p>
-<p>Funding for this tool was provided by CDFA and USDA-NFA ECDRE Extension Grants, and computing resources were provided by the IBM Power Systems Academic Initiative. For more information about the research that powers this tool, check out the research notes and publication in the links section or contact us at <a href="mailto:kaplanj@csus.edu">kaplanj@csus.edu</a>.</p>
+<p>Funding to support the development of this tool provided by a CDFA grant (#19-0001-034-SF) and USDA-NFA ECDRE grant (#2017-70016-26053), and computing resources were provided by the IBM Power Systems Academic Initiative. For more information about the research that powers this tool, check out the research notes and publication in the links section or contact us at <a href="mailto:kaplanj@csus.edu">kaplanj@csus.edu</a>.</p>
 <h3>Helpful Links</h3>
 <p>
 <a href="https://ucanr.edu/sites/ACP/Grower_Options/Grower_Management/Eradication_Strategies/">ACP Eradication Strategies</a><br/>
@@ -68,19 +67,23 @@ Peer-Reviewed Publication (Forthcoming)
       <br>
       <input type="number" id="numAcres" value=55>
       <br><br>
-      <label>Average annual yield per acre (in cartons)</label>
+      <label>Average annual yield per acre (in 37.5lb cartons)</label>
       <br>
       <input type="number" id="annualYield" value="564">
       <br><br>
       <label>Average return per carton (price of carton)</label>
       <br>
       <input type="number" id="unitPrice" value="17.60">
+      <br><br>
+      <label>Annual fixed costs per acre</label>
+      <br>
+      <input type="number" id="annualCosts" value="9293">
     </div>
     <div id="plotHolder" class="col-sm">
       <h1>Output</h1>
+      <div id="profit"></div>
       <div id="hlbSpread"></div>
       <div id="yield"></div>
-      <div id="profit"></div>
     </div>
   </div>
 </div>
@@ -100,6 +103,8 @@ Peer-Reviewed Publication (Forthcoming)
 -->
     
 <script>
+  //Uncomment below for production
+  console.log = function() {}
       //width = 700 - margin.left - margin.right,
       //height = 600 - margin.top - margin.bottom;
   function betaCurve(relT, efficacy, strategy, alpha) {
@@ -712,15 +717,16 @@ Peer-Reviewed Publication (Forthcoming)
     let numAcres = d3.select("#numAcres").property("value");
     let annualYield = d3.select("#annualYield").property("value");
     let unitPrice = d3.select("#unitPrice").property("value");
+    let annualCosts = d3.select("#annualCosts").property("value");
     var noActionProfit = 0;
     var individualProfit = 0;
     var groupProfit = 0;
-    for (let x=1; x <= numYears; x++) {
-      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres;
+    for (let x=0; x <= numYears; x++) {
+      noActionProfit += annualYield * infectedYield(noaction(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres - (numAcres*annualCosts);
       individualProfit += annualYield * infectedYield(individualspray(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres
-                              - (sprayCost * numAcres * 6);
+                              - (sprayCost * numAcres * 6) - (numAcres*annualCosts);
       groupProfit += annualYield * infectedYield(groupspray(x*365,alpha,startingMonth,efficacy)) * unitPrice * numAcres
-                              - (sprayCost * numAcres * 6);
+                              - (sprayCost * numAcres * 6) - (numAcres*annualCosts);
       values.push({"x": x, "y": noActionProfit,"strategy": "No Action" });
       values.push({"x": x, "y": individualProfit, "strategy": "Individual Spray" });
       values.push({"x": x, "y": groupProfit, "strategy": "Coordinated Spray" });
@@ -747,8 +753,15 @@ Peer-Reviewed Publication (Forthcoming)
       .text("Years since today");
 
     // Add Y axis
+    // OLD AXIS DOMAIN .domain([0, d3.max(values, function(d) { return +d.y; })])
+    var y_domain = d3.extent(values, function(d) {return d.y; });
+    console.log(y_domain)
+    var y_d_range = Math.abs(y_domain[1] - y_domain[0])
+    y_domain[0] = y_domain[0] - (y_d_range * 0.1)
+    y_domain[1] = y_domain[1] + (y_d_range * 0.1)
+    console.log(y_domain)
     var y = d3.scaleLinear()
-      .domain([0, d3.max(values, function(d) { return +d.y; })])
+      .domain(y_domain)
       .range([ height - margin.top - padding, 0 ]);
     svg.append("g")
       .attr("transform", "translate(" + Math.floor(0.02 * width) + ", 0)")
